@@ -28,12 +28,7 @@ class ConexionPostgreSQL:
         self.conexion = psycopg2.connect(
             f"host={host} dbname=postgres user={user} password={password} port={port}")
         print('Conexión exitosa')
-
-    def conectarMySql(self):
-        host = os.getenv("DATABASE_HOST")
-        user = os.getenv("DATABASE_USER")
-        password = os.getenv("DATABASE_PASSWORD")
-
+   
     def listar_bd(self):
         # Crear un cursor para ejecutar consultas
         cur = self.conexion.cursor()
@@ -78,15 +73,12 @@ class ConexionPostgreSQL:
         
         logging.info("Backup de la BD completado con exito.")
 
-    def elimiarViejo(self):
+    def elimiarViejos(self):
         
         fecha_limite= datetime.now() - timedelta(days=self.dia)
-        print(f"fehca: {fecha_limite}")
-
         for nombreCarpeta in os.listdir(self.ruta):
             if nombreCarpeta.startswith('20'):
-                fechaCarpeta = datetime.strptime(nombreCarpeta, '%Y_%m_%d')
-                print(fechaCarpeta)
+                fechaCarpeta = datetime.strptime(nombreCarpeta, '%Y_%m_%d')               
             if fechaCarpeta < fecha_limite:
                 try:
                     shutil.rmtree(os.path.join(self.ruta, nombreCarpeta))
@@ -103,9 +95,9 @@ class ConexionPostgreSQL:
 
 
 # Crear una instancia de la clase y llamar al método para listar las bases de datos
-conexion_postgresql = ConexionPostgreSQL()
-
-conexion_postgresql.conectarPG()
-bd = conexion_postgresql.listar_bd()
-conexion_postgresql.repaldar(bd)
-conexion_postgresql.elimiarViejo()
+postgresql = ConexionPostgreSQL()
+postgresql.conectarPG()
+bd = postgresql.listar_bd()
+postgresql.repaldar(bd)
+#eliminamos los arhivos Viejos
+postgresql.elimiarViejos()
