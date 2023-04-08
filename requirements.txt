@@ -1,0 +1,8 @@
+distlib==0.3.6
+filelock==3.4.1
+importlib-metadata==4.8.3
+importlib-resources==5.4.0
+platformdirs==2.4.0
+typing-extensions==4.1.1
+virtualenv==20.17.1
+zipp==3.6.0

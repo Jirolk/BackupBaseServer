@@ -3,8 +3,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+log_Backup.txt
+
 # C extensions
 *.so
+*.gz
 
 # Distribution / packaging
 .Python
