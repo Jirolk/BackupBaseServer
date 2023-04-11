@@ -121,7 +121,7 @@ class ConexionMySQL():
         host = os.getenv("DATABASE_HOST")
         user = os.getenv("DATABASE_USER")
         password = os.getenv("DATABASE_PASSWORD")    
-        print(host,user,password)  
+        print("MySQl conexión:...")
         try:
             self.con = mysql.connector.connect(
                 host=host,
@@ -148,7 +148,7 @@ class ConexionMySQL():
 
     def respaldar(self, archivos_FE):
         for db in archivos_FE:
-            carpeta=os.path.join(self.ruta,"Mysql", fecha)
+            carpeta=os.path.join(self.ruta,"mysql", fecha)
             os.makedirs(carpeta, exist_ok = True)
             # archivo = carpeta+"/"+ f"{db}.sql.gz"
             archivo=os.path.join(carpeta, f"{db}.sql.gz")

@@ -46,7 +46,7 @@ print("Bases de datos disponibles:", len(db_list))
 # print(f"Cantidad de Bd: {len(archivos_FE)}")
 print("Empecemos... a respaldar\n")
 for db in db_list:
-    carpeta=os.path.join(ruta,"PostgresSql", fecha)
+    carpeta=os.path.join(ruta,"postgresSql", fecha)
     os.makedirs(carpeta, exist_ok = True)
     # archivo = carpeta+"/"+ f"{db}.sql.gz"
     archivo=os.path.join(carpeta, f"{db}.sql.gz")
@@ -73,13 +73,13 @@ conn.close()
 
 #Fragmento para borrar los respaldos dependiendo de los días
 fecha_limite= datetime.now() - timedelta(days=dia)
-for nombreCarpeta in os.listdir(os.path.join(ruta, 'PostgresSql')):
+for nombreCarpeta in os.listdir(os.path.join(ruta, 'postgresSql')):
     
     if nombreCarpeta.startswith('20'):
         fechaCarpeta = datetime.strptime(nombreCarpeta, '%Y_%m_%d')               
     if fechaCarpeta < fecha_limite:
         try:
-            shutil.rmtree(os.path.join(ruta,"PostgresSql", nombreCarpeta))
+            shutil.rmtree(os.path.join(ruta,"postgresSql", nombreCarpeta))
             print('Se ha eliminado la carpeta:', nombreCarpeta)
             logging.warning(f"'Se ha eliminado la carpeta:', {nombreCarpeta}")
         except OSError as e:
