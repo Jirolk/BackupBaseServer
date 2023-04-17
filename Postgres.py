@@ -4,6 +4,7 @@ import os
 from datetime import datetime, timedelta
 import subprocess
 import logging
+import shutil
 
 load_dotenv()
 
@@ -39,6 +40,7 @@ cursor.execute("SELECT datname FROM pg_database WHERE datistemplate = false;")
 
 # Obtener los resultados de la consulta
 db_list = [row[0] for row in cursor.fetchall()]
+db_list = list(filter(lambda x: x.endswith("metropolis"), db_list))
 print("Bases de datos disponibles:", len(db_list))
 
 # Filtrar archivos que terminan con "_FE"
