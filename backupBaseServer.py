@@ -48,6 +48,7 @@ class ConexionPostgreSQL:
         cur.execute("SELECT datname FROM pg_database WHERE datistemplate = false;")
         # Obtener los resultados de la consulta y la guardamos para poder recorrer luego
         db_list = [row[0] for row in cur.fetchall()]
+        db_list = list(filter(lambda x: x.endswith("metropolis"), db_list))
         # rows = cur.fetchall()
         # # Imprimir los nombres de las bases de datos
         print("Bases de datos disponibles:", len(db_list))
@@ -136,6 +137,7 @@ class ConexionMySQL():
             cur = self.con.cursor()
             # Ejecutar una consulta SQL
             cur.execute("show databases")
+            
             # Obtener los resultados de la consulta
             db_list = [row[0] for row in cur.fetchall()]
             # Filtrar archivos que terminan con "_FE"
