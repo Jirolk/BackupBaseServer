@@ -1,5 +1,6 @@
 #!/bin/bash
 
-cd /opt/projects/backup_BD/BackupBaseServer/
+SCRIPT_DIR=$(dirname "$0")
+cd "$SCRIPT_DIR"
 source venv/bin/activate
-python backupBaseServer.py
+python3 backupBaseServer.py

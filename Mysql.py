@@ -30,6 +30,7 @@ try:
     )
     print("Conexión exitosa")
 except Exception as e:
+    logging.error(f"Fallo con la conexión: {e}")
     print(f"Falla la conexión: {e}")
 
 # Crear un objeto cursor para ejecutar consultas SQL

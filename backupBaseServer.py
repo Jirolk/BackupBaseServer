@@ -31,15 +31,16 @@ class ConexionPostgreSQL:
         user = os.getenv("pDATABASE_USER")
         password = os.getenv("pDATABASE_PASSWORD")
         port = os.getenv("pDATABASE_PORT")
-               
+        print("Postgres conexión:...")
         try:
             self.conexion = psycopg2.connect(
                 f"host={host} dbname={dbname} user={user} password={password} port={port}")
             print('Conexión exitosa')
-            
+            return True
         except (Exception, psycopg2.Error)  as error:
+            logging.error(f"Fallo con la conexión: {error}")
             print(f'Falla con la conexión: {error}')
-            
+        return False   
 
     def listar_bd(self):
         # Crear un cursor para ejecutar consultas
@@ -83,7 +84,8 @@ class ConexionPostgreSQL:
             
         print(f"\nBackup de la BD completado con exito en fecha: {datetime.now()}")
         
-        logging.info("Postgres:Backup de la BD completado con exito.")
+        logging.info(f"Postgres:Backup de la BD completado con exito. Cant:{len(db_list)}")
+        
 
     def eliminarViejos(self):
         
@@ -102,8 +104,6 @@ class ConexionPostgreSQL:
                     logging.error(f"{e} - La carpeta no se ha eliminado:', {nombreCarpeta}")
             else:
                 print("Ningún archivo fue borrado")
-
-
             
     def __del__(self):
 
@@ -115,10 +115,11 @@ class ConexionMySQL():
         load_dotenv()
         self.ruta = os.getenv("BACKUP_DIR")
         self.dia = int(os.getenv('DIA'))
-        # self.con= None
+        self.con= None
         #Log de las backup hechas
         logging.basicConfig(filename='log_Backup.txt', level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
         
+    
         host = os.getenv("DATABASE_HOST")
         user = os.getenv("DATABASE_USER")
         password = os.getenv("DATABASE_PASSWORD")    
@@ -129,9 +130,12 @@ class ConexionMySQL():
                 user=user,
                 password=password)
             print("Conexión exitosa")
+            # return True
         except Exception as e:
+            logging.error(f"Fallo con la conexión: {e}")
             print(f"Falla la conexión: {e}")
-    
+        # return False
+
     def listar_bd(self):
         try:
             cur = self.con.cursor()
@@ -197,20 +201,22 @@ class ConexionMySQL():
 
         if self.con:
             self.con.close()
-        
-
 
 
 # Crear una instancia de la clase y llamar al método para listar las bases de datos
 postgresql = ConexionPostgreSQL()
-postgresql.conectarPG()
-bd = postgresql.listar_bd()
-postgresql.respaldar(bd)
-#eliminamos los arhivos Viejos
-postgresql.eliminarViejos()
+if postgresql.conectarPG():
+    bd = postgresql.listar_bd()
+    postgresql.respaldar(bd)
+    postgresql.eliminarViejos()
+else:
+    print("No se pudo conectar a la base de datos PostgreSQL")
 
-mysql= ConexionMySQL()
-bd= mysql.listar_bd()
-mysql.respaldar(bd)
-mysql.eliminarViejos()
+try:
+    mysql = ConexionMySQL()
+    bd = mysql.listar_bd()
+    mysql.respaldar(bd)
+    mysql.eliminarViejos()
+except Exception as e:
+    print(f"Ocurrió un error al conectarse a la base de datos: {e}")
 
