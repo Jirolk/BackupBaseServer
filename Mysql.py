@@ -56,14 +56,18 @@ for db in archivos_FE:
         'mysqldump',
         '-h', os.getenv('DATABASE_HOST'),
         '-u', os.getenv('DATABASE_USER'),
-        '--password=', os.getenv('DATABASE_PASSWORD'),
+        '--password='+ os.getenv('DATABASE_PASSWORD'),
         db,
         '|', 'gzip', '>', archivo
         ]
 
+    # with subprocess.Popen(" ".join(cmd), stdin=subprocess.PIPE, shell=True) as proc:
+    #             proc.stdin.write(password.encode())
+    #             proc.communicate()
     with subprocess.Popen(" ".join(cmd), stdin=subprocess.PIPE, shell=True) as proc:
-                proc.stdin.write(password.encode())
-                proc.communicate()
+        proc.communicate(input=password.encode())
+
+
 logging.info(f"Mysql:Backup de la BD completado con exito. Cant:{len(archivos_FE)}")
 # Cerrar el cursor y la conexión
 cursor.close()

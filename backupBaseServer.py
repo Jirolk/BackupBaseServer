@@ -60,6 +60,9 @@ class ConexionPostgreSQL:
         return db_list
 
     def respaldar(self, db_list):
+        # Establecer la variable de entorno PGPASSWORD con la contraseña
+        os.environ['PGPASSWORD'] = os.getenv('DATABASE_PASSWORD')
+
         carpeta = os.path.join(self.ruta,"postgresSql", fecha)
         os.makedirs(carpeta, exist_ok=True)
         password = os.getenv('pDATABASE_PASSWORD')
@@ -78,14 +81,17 @@ class ConexionPostgreSQL:
                 '|', 'gzip', '>', archivo
             ]
 
-            with subprocess.Popen(" ".join(cmd), stdin=subprocess.PIPE, shell=True) as proc:
-                proc.stdin.write(password.encode())
+            # with subprocess.Popen(" ".join(cmd), stdin=subprocess.PIPE, shell=True) as proc:
+            #     proc.stdin.write(password.encode())
+            #     proc.communicate()
+            with subprocess.Popen(" ".join(cmd), shell=True) as proc:
                 proc.communicate()
-            
         print(f"\nBackup de la BD completado con exito en fecha: {datetime.now()}")
         
         logging.info(f"Postgres:Backup de la BD completado con exito. Cant:{len(db_list)}")
-        
+        # Eliminar la variable de entorno PGPASSWORD después de su uso
+        del os.environ['PGPASSWORD']
+
 
     def eliminarViejos(self):
         
@@ -164,15 +170,13 @@ class ConexionMySQL():
                 'mysqldump',
                 '-h', os.getenv('DATABASE_HOST'),
                 '-u', os.getenv('DATABASE_USER'),
-                '--password=', os.getenv('DATABASE_PASSWORD'),
+                '--password='+ os.getenv('DATABASE_PASSWORD'),
                 db,
                 '|', 'gzip', '>', archivo
                 ]
 
             with subprocess.Popen(" ".join(cmd), stdin=subprocess.PIPE, shell=True) as proc:
-                        proc.stdin.write(password.encode())
-                        proc.communicate()
-        
+                proc.communicate(input=password.encode())
         logging.info(f"MySQL:Backup de la BD completado con exito. Cant:{len(archivos_FE)}")
             
         print(f"\nBackup de la BD MySQL completado con exito en fecha: {datetime.now()}")
