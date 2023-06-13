@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import logging
 import shutil
 import importlib
+from byte_to_megabytes import *
 importlib.reload(mysql.connector)
 
 
@@ -66,7 +67,11 @@ class ConexionPostgreSQL:
         carpeta = os.path.join(self.ruta,"postgresSql", fecha)
         os.makedirs(carpeta, exist_ok=True)
         password = os.getenv('pDATABASE_PASSWORD')
-        print("Empecemos... a respaldar\n")
+       
+        peso_bytes=0 #Inicializamos para medir si realizó la backup
+        peso_megabytes=0
+        print("Empecemos... a respaldar BD postgres\n")
+
         for db in db_list:
             # archivo = carpeta+"/"+ f"{db}.sql.gz"
             archivo = os.path.join(carpeta, f"{db}.sql.gz")
@@ -86,9 +91,31 @@ class ConexionPostgreSQL:
             #     proc.communicate()
             with subprocess.Popen(" ".join(cmd), shell=True) as proc:
                 proc.communicate()
-        print(f"\nBackup de la BD completado con exito en fecha: {datetime.now()}")
-        
-        logging.info(f"Postgres:Backup de la BD completado con exito. Cant:{len(db_list)}")
+
+            # Verificar el tamaño del archivo de respaldo
+            if os.path.exists(archivo):
+                peso_bytes += os.path.getsize(archivo)
+                peso_megabytes = bytes_to_megabytes(peso_bytes)
+                
+            else:
+                print("No se pudo generar el archivo de respaldo.")
+
+
+            # Verificar el tamaño del archivo de respaldo   
+            if os.path.exists(archivo):
+                peso_bytes += os.path.getsize(archivo)
+                peso_megabytes = bytes_to_megabytes(peso_bytes)  
+
+        print(f"Tamaño procesado: {peso_bytes} bytes | {peso_megabytes} Mb")
+        if peso_megabytes>0.01:
+            print(f"\nBackup de la BD completado con exito en fecha: {datetime.now()}")
+            print(f"La Backup tiene un tamaño de {peso_megabytes:.2f} MB.")        
+            logging.info(f"Postgres:Backup de la BD completado con exito. Cant:{len(db_list)}")
+        else:
+            print("No se pudo generar el archivo de respaldo.")
+
+
+       
         # Eliminar la variable de entorno PGPASSWORD después de su uso
         del os.environ['PGPASSWORD']
 
@@ -159,6 +186,10 @@ class ConexionMySQL():
 
 
     def respaldar(self, archivos_FE):
+        peso_bytes=0 #Inicializamos para medir si realizó la backup
+        peso_megabytes =0
+        print("Empecemos... a respaldar BD mysql\n")
+
         for db in archivos_FE:
             carpeta=os.path.join(self.ruta,"mysql", fecha)
             os.makedirs(carpeta, exist_ok = True)
@@ -177,10 +208,21 @@ class ConexionMySQL():
 
             with subprocess.Popen(" ".join(cmd), stdin=subprocess.PIPE, shell=True) as proc:
                 proc.communicate(input=password.encode())
-        logging.info(f"MySQL:Backup de la BD completado con exito. Cant:{len(archivos_FE)}")
-            
-        print(f"\nBackup de la BD MySQL completado con exito en fecha: {datetime.now()}")
-                
+
+            # Verificar el tamaño del archivo de respaldo
+            if os.path.exists(archivo):
+                peso_bytes += os.path.getsize(archivo)
+                peso_megabytes = bytes_to_megabytes(peso_bytes) 
+        
+    
+        print(f"Tamaño procesado: {peso_bytes} bytes | {peso_megabytes} Mb")
+        if peso_megabytes>0.01:
+            print(f"\nBackup de la BD completado con exito en fecha: {datetime.now()}")
+            print(f"La Backup tiene un tamaño de {peso_megabytes:.2f} MB.")        
+            logging.info(f"Mysql:Backup de la BD completado con exito. Cant:{len(archivos_FE)}")
+        else:                
+            print("No se pudo generar el archivo de respaldo.")
+                        
 
     def eliminarViejos(self):
         
@@ -224,3 +266,4 @@ try:
 except Exception as e:
     print(f"Ocurrió un error al conectarse a la base de datos: {e}")
 
+print("fin...")
