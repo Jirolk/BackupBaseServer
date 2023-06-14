@@ -227,13 +227,13 @@ class ConexionMySQL():
     def eliminarViejos(self):
         
         fecha_limite= datetime.now() - timedelta(days=self.dia)
-        for nombreCarpeta in os.listdir(os.path.join(self.ruta, 'Mysql')):
+        for nombreCarpeta in os.listdir(os.path.join(self.ruta, 'mysql')):
             
             if nombreCarpeta.startswith('20'):
                 fechaCarpeta = datetime.strptime(nombreCarpeta, '%Y_%m_%d')               
             if fechaCarpeta < fecha_limite:
                 try:
-                    shutil.rmtree(os.path.join(self.ruta,"Mysql", nombreCarpeta))
+                    shutil.rmtree(os.path.join(self.ruta,"mysql", nombreCarpeta))
                     print('Se ha eliminado la carpeta:', nombreCarpeta)
                     logging.warning(f"'Se ha eliminado la carpeta:', {nombreCarpeta}")
                 except OSError as e:

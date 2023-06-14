@@ -51,7 +51,7 @@ peso_megabytes =0
 print("Empecemos... a respaldar BD mysql\n")
 
 for db in archivos_FE:
-    carpeta=os.path.join(ruta,"Mysql", fecha)
+    carpeta=os.path.join(ruta,"mysql", fecha)
     os.makedirs(carpeta, exist_ok = True)
     # archivo = carpeta+"/"+ f"{db}.sql.gz"
     archivo=os.path.join(carpeta, f"{db}.sql.gz")
@@ -92,13 +92,13 @@ conn.close()
 
 # para eliminar los backup viejos
 fecha_limite= datetime.now() - timedelta(days=dia)
-for nombreCarpeta in os.listdir(os.path.join(ruta, 'Mysql')):
+for nombreCarpeta in os.listdir(os.path.join(ruta, 'mysql')):
     #print("Nombre: ",nombreCarpeta)
     if nombreCarpeta.startswith('20'):
         fechaCarpeta = datetime.strptime(nombreCarpeta, '%Y_%m_%d')               
     if fechaCarpeta < fecha_limite:
         try:
-            shutil.rmtree(os.path.join(ruta,"Mysql", nombreCarpeta))
+            shutil.rmtree(os.path.join(ruta,"mysql", nombreCarpeta))
             print('Se ha eliminado la carpeta:', nombreCarpeta)
             logging.warning(f"'Se ha eliminado la carpeta:', {nombreCarpeta}")
         except OSError as e:
