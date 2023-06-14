@@ -25,6 +25,6 @@ source env/bin/activate
 pip install -r requirements.txt
 
 #agregamos la tarea al crontab
-(crontab -l 2>/dev/null; echo "0 1 * * * sh $directorio/backup.sh") | crontab -
+sudo (crontab -l 2>/dev/null; echo "0 1 * * * sh $directorio/backup.sh") | crontab -
 echo Se realizará de forma periodica la tarea a las 01:00 AM
 echo Fin
