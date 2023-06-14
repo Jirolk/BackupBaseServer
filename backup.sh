@@ -2,5 +2,5 @@
 
 SCRIPT_DIR=$(dirname "$0")
 cd "$SCRIPT_DIR"
-source venv/bin/activate
+source env/bin/activate
 python3 backupBaseServer.py

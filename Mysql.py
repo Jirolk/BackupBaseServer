@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import subprocess
 import logging
 import shutil
+from byte_to_megabytes import *
 load_dotenv()
 
 
@@ -44,7 +45,10 @@ db_list = [row[0] for row in cursor.fetchall()]
 # Filtrar archivos que terminan con "_FE"
 archivos_FE = list(filter(lambda x: x.endswith("_fe"), db_list))
 
-print(f"Cantidad de Bd: {len(archivos_FE)}")
+print(f"Bases de datos disponibles: {len(archivos_FE)}")
+peso_bytes=0 #Inicializamos para medir si realizó la backup
+peso_megabytes =0
+print("Empecemos... a respaldar BD mysql\n")
 
 for db in archivos_FE:
     carpeta=os.path.join(ruta,"Mysql", fecha)
@@ -56,23 +60,40 @@ for db in archivos_FE:
         'mysqldump',
         '-h', os.getenv('DATABASE_HOST'),
         '-u', os.getenv('DATABASE_USER'),
-        '--password=', os.getenv('DATABASE_PASSWORD'),
+        '--password='+ os.getenv('DATABASE_PASSWORD'),
         db,
         '|', 'gzip', '>', archivo
         ]
 
+    # with subprocess.Popen(" ".join(cmd), stdin=subprocess.PIPE, shell=True) as proc:
+    #             proc.stdin.write(password.encode())
+    #             proc.communicate()
     with subprocess.Popen(" ".join(cmd), stdin=subprocess.PIPE, shell=True) as proc:
-                proc.stdin.write(password.encode())
-                proc.communicate()
-logging.info(f"Mysql:Backup de la BD completado con exito. Cant:{len(archivos_FE)}")
+        proc.communicate(input=password.encode())
+
+
+    # Verificar el tamaño del archivo de respaldo
+   
+    if os.path.exists(archivo):
+        peso_bytes += os.path.getsize(archivo)
+        peso_megabytes = bytes_to_megabytes(peso_bytes) 
+   
+    
+print(f"Tamaño procesado: {peso_bytes} bytes | {peso_megabytes} Mb")
+if peso_megabytes>0.01:
+    print(f"\nBackup de la BD completado con exito en fecha: {datetime.now()}")
+    print(f"La Backup tiene un tamaño de {peso_megabytes:.2f} MB.")        
+    logging.info(f"Mysql:Backup de la BD completado con exito. Cant:{len(archivos_FE)}")
+else:
+    print("No se pudo generar el archivo de respaldo.")
 # Cerrar el cursor y la conexión
 cursor.close()
 conn.close()
 
-
+# para eliminar los backup viejos
 fecha_limite= datetime.now() - timedelta(days=dia)
 for nombreCarpeta in os.listdir(os.path.join(ruta, 'Mysql')):
-    print("Nombre: ",nombreCarpeta)
+    #print("Nombre: ",nombreCarpeta)
     if nombreCarpeta.startswith('20'):
         fechaCarpeta = datetime.strptime(nombreCarpeta, '%Y_%m_%d')               
     if fechaCarpeta < fecha_limite:
@@ -83,4 +104,4 @@ for nombreCarpeta in os.listdir(os.path.join(ruta, 'Mysql')):
         except OSError as e:
             print(f'Error: {e} - La carpeta no se ha eliminado')
             logging.error(f"{e} - La carpeta no se ha eliminado:', {nombreCarpeta}")
-
+print("Fin...")

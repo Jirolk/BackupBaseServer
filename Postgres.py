@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import subprocess
 import logging
 import shutil
+from byte_to_megabytes import *
 
 load_dotenv()
 
@@ -20,7 +21,10 @@ dbname=os.getenv("pDATABASE_NAME")
 user = os.getenv("pDATABASE_USER")
 password = os.getenv("pDATABASE_PASSWORD")
 port = os.getenv("pDATABASE_PORT")
-         
+
+# Establecer la variable de entorno PGPASSWORD con la contraseña
+os.environ['PGPASSWORD'] = os.getenv('DATABASE_PASSWORD')
+
 #Log de las backup hechas
 logging.basicConfig(filename='log_Backup.txt', level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
 
@@ -30,8 +34,8 @@ try:
         f"host={host} dbname={dbname} user={user} password={password} port={port}")
     print('Conexión exitosa')
 except (Exception, psycopg2.Error)  as error:
-    logging.error(f"Fallo con la conexión: {error}")
-    print(f'Falla con la conexión: {error}')
+    logging.error(f"Fallo con la conexiÃ³n: {error}")
+    print(f'Falla con la conexiÃ³n: {error}')
             
 # Crear un objeto cursor para ejecutar consultas SQL
 cursor = conn.cursor()
@@ -47,7 +51,10 @@ print("Bases de datos disponibles:", len(db_list))
 # Filtrar archivos que terminan con "_FE"
 # archivos_FE = list(filter(lambda x: x.endswith("_fe"), db_list))
 # print(f"Cantidad de Bd: {len(archivos_FE)}")
-print("Empecemos... a respaldar\n")
+
+peso_bytes=0 #Inicializamos para medir si realizó la backup
+peso_megabytes=0
+print("Empecemos... a respaldar BD postgres\n")
 for db in db_list:
     carpeta=os.path.join(ruta,"postgresSql", fecha)
     os.makedirs(carpeta, exist_ok = True)
@@ -55,26 +62,57 @@ for db in db_list:
     archivo=os.path.join(carpeta, f"{db}.sql.gz")
     # comando para el respaldo de la BD postgres
     cmd = [
-        'pg_dump',
+        'pg_dump --no-privileges --no-owner --no-reconnect',
         '-h', os.getenv('pDATABASE_HOST'),
         '-U', os.getenv('pDATABASE_USER'),
-        # '-W', os.getenv('DATABASE_PASSWORD'),
+        #'-W', os.getenv('DATABASE_PASSWORD'),
         '-F', 'p',
         '-w', db,
         '|', 'gzip', '>', archivo
             ]
 
-    with subprocess.Popen(" ".join(cmd), stdin=subprocess.PIPE, shell=True) as proc:
-        proc.stdin.write(password.encode())
+    # subprocess.call(cmd,shell=True)
+    # subprocess.call(os.getenv('DATABASE_PASSWORD'), shell=True)
+    # with subprocess.Popen(" ".join(cmd), stdin=subprocess.PIPE, shell=True) as proc:
+    #     password = os.getenv('DATABASE_PASSWORD') + '\n'
+    #     proc.stdin.write(password.encode())
+    #     proc.communicate()
+    
+    with subprocess.Popen(" ".join(cmd), shell=True) as proc:
         proc.communicate()
+    
+    # Verificar el tamaño del archivo de respaldo
+    if os.path.exists(archivo):
+        peso_bytes += os.path.getsize(archivo)
+        peso_megabytes = bytes_to_megabytes(peso_bytes)
+        
+    else:
+        print("No se pudo generar el archivo de respaldo.")
 
-print(f"\nBackup de la BD completado con exito en fecha: {datetime.now()}")
-logging.info(f"Postgres:Backup de la BD completado con exito. Cant:{len(db_list)}")
-# Cerrar el cursor y la conexión
+
+    # Verificar el tamaño del archivo de respaldo   
+    if os.path.exists(archivo):
+        peso_bytes += os.path.getsize(archivo)
+        peso_megabytes = bytes_to_megabytes(peso_bytes)  
+    
+print(f"Tamaño procesado: {peso_bytes} bytes | {peso_megabytes} Mb")
+if peso_megabytes>0.01:
+    print(f"\nBackup de la BD completado con exito en fecha: {datetime.now()}")
+    print(f"La Backup tiene un tamaño de {peso_megabytes:.2f} MB.")        
+    logging.info(f"Postgres:Backup de la BD completado con exito. Cant:{len(db_list)}")
+else:
+    print("No se pudo generar el archivo de respaldo.")
+    
+    
+
+# Eliminar la variable de entorno PGPASSWORD después de su uso
+del os.environ['PGPASSWORD']
+
+# Cerrar el cursor y la conexiÃ³n
 cursor.close()
 conn.close()
 
-#Fragmento para borrar los respaldos dependiendo de los días
+#Fragmento para borrar los respaldos dependiendo de los dÃ­as
 fecha_limite= datetime.now() - timedelta(days=dia)
 for nombreCarpeta in os.listdir(os.path.join(ruta, 'postgresSql')):
     
@@ -88,4 +126,4 @@ for nombreCarpeta in os.listdir(os.path.join(ruta, 'postgresSql')):
         except OSError as e:
             print(f'Error: {e} - La carpeta no se ha eliminado')
             logging.error(f"{e} - La carpeta no se ha eliminado:', {nombreCarpeta}")
-
+print("fin...")
