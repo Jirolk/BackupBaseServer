@@ -86,34 +86,37 @@ class ConexionPostgreSQL:
                 '|', 'gzip', '>', archivo
             ]
 
-            # with subprocess.Popen(" ".join(cmd), stdin=subprocess.PIPE, shell=True) as proc:
-            #     proc.stdin.write(password.encode())
-            #     proc.communicate()
-            with subprocess.Popen(" ".join(cmd), shell=True) as proc:
-                proc.communicate()
+            try:
 
-            # Verificar el tamaño del archivo de respaldo
-            if os.path.exists(archivo):
-                peso_bytes += os.path.getsize(archivo)
-                peso_megabytes = bytes_to_megabytes(peso_bytes)
-                
-            else:
-                print("No se pudo generar el archivo de respaldo.")
+                with subprocess.Popen(" ".join(cmd), shell=True) as proc:
+                    proc.communicate()
+
+                # Verificar el tamaño del archivo de respaldo
+                if os.path.exists(archivo):
+                    peso_bytes += os.path.getsize(archivo)
+                    peso_megabytes = bytes_to_megabytes(peso_bytes)
+                    
+                else:
+                    print("No se pudo generar el archivo de respaldo.")
+            except subprocess.CalledProcessError as e:
+
+                logging.error(f"Tenemos un problea: {e}")
+                print(f"Error: {e}")
 
 
             # Verificar el tamaño del archivo de respaldo   
             if os.path.exists(archivo):
                 peso_bytes += os.path.getsize(archivo)
                 peso_megabytes = bytes_to_megabytes(peso_bytes)  
-
+        
         print(f"Tamaño procesado: {peso_bytes} bytes | {peso_megabytes} Mb")
         if peso_megabytes>0.01:
             print(f"\nBackup de la BD completado con exito en fecha: {datetime.now()}")
             print(f"La Backup tiene un tamaño de {peso_megabytes:.2f} MB.")        
             logging.info(f"Postgres:Backup de la BD completado con exito. Cant:{len(db_list)}")
         else:
+            logging.error("No se pudo generar el archivo de respaldo")
             print("No se pudo generar el archivo de respaldo.")
-
 
        
         # Eliminar la variable de entorno PGPASSWORD después de su uso
@@ -136,7 +139,7 @@ class ConexionPostgreSQL:
                     print(f'Error: {e} - La carpeta no se ha eliminado')
                     logging.error(f"{e} - La carpeta no se ha eliminado:', {nombreCarpeta}")
             else:
-                print("Ningún archivo fue borrado")
+                print(f"La carpeta {nombreCarpeta} no fue borrado")
             
     def __del__(self):
 
@@ -220,7 +223,8 @@ class ConexionMySQL():
             print(f"\nBackup de la BD completado con exito en fecha: {datetime.now()}")
             print(f"La Backup tiene un tamaño de {peso_megabytes:.2f} MB.")        
             logging.info(f"Mysql:Backup de la BD completado con exito. Cant:{len(archivos_FE)}")
-        else:                
+        else:         
+            logging.error(f"Mysql:No se pudo generar el archivo de respaldo")
             print("No se pudo generar el archivo de respaldo.")
                         
 
@@ -240,7 +244,7 @@ class ConexionMySQL():
                     print(f'Error: {e} - La carpeta no se ha eliminado')
                     logging.error(f"{e} - La carpeta no se ha eliminado:', {nombreCarpeta}")
             else:
-                print("Ningún archivo fue borrado")
+                print(f"La carpeta {nombreCarpeta} no fue borrado")
 
             
     def __del__(self):
