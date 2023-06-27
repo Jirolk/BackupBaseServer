@@ -87,21 +87,14 @@ class ConexionPostgreSQL:
             ]
 
             try:
-
-                with subprocess.Popen(" ".join(cmd), shell=True) as proc:
-                    proc.communicate()
-
-                # Verificar el tamaño del archivo de respaldo
-                if os.path.exists(archivo):
-                    peso_bytes += os.path.getsize(archivo)
-                    peso_megabytes = bytes_to_megabytes(peso_bytes)
-                    
-                else:
-                    print("No se pudo generar el archivo de respaldo.")
+                with subprocess.Popen(" ".join(cmd), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as proc:
+                    stdout, stderr = proc.communicate()
+                    if stderr:
+                        logging.error(f"Error al ejecutar pg_dump: {stderr.decode('utf-8')}")
+                        print("Error al ejecutar pg_dump:", stderr.decode('utf-8'))
             except subprocess.CalledProcessError as e:
-
-                logging.error(f"Tenemos un problea: {e}")
-                print(f"Error: {e}")
+                logging.error(f"Ocurrió un error en subprocess: {e}")
+                print("Ocurrió un error en subprocess:", e)
 
 
             # Verificar el tamaño del archivo de respaldo   
@@ -115,7 +108,7 @@ class ConexionPostgreSQL:
             print(f"La Backup tiene un tamaño de {peso_megabytes:.2f} MB.")        
             logging.info(f"Postgres:Backup de la BD completado con exito. Cant:{len(db_list)}")
         else:
-            logging.error("No se pudo generar el archivo de respaldo")
+            logging.error("Postgres: No se pudo generar el archivo de respaldo")
             print("No se pudo generar el archivo de respaldo.")
 
        
@@ -224,7 +217,7 @@ class ConexionMySQL():
             print(f"La Backup tiene un tamaño de {peso_megabytes:.2f} MB.")        
             logging.info(f"Mysql:Backup de la BD completado con exito. Cant:{len(archivos_FE)}")
         else:         
-            logging.error(f"Mysql:No se pudo generar el archivo de respaldo")
+            logging.error(f"Mysql: No se pudo generar el archivo de respaldo")
             print("No se pudo generar el archivo de respaldo.")
                         
 
