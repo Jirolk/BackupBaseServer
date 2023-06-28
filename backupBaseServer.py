@@ -98,7 +98,8 @@ class ConexionPostgreSQL:
             archivo = os.path.join(carpeta, f"{db}.sql.gz")
             #comando para el respaldo de la BD postgres
             cmd = [
-                'pg_dump',
+                #'pg_dump',
+                pg_dump_path,
                 '-h', os.getenv('pDATABASE_HOST'),
                 '-U', os.getenv('pDATABASE_USER'),
                 # '-W', os.getenv('DATABASE_PASSWORD'),
