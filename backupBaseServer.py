@@ -11,6 +11,7 @@ import shutil
 import importlib
 from byte_to_megabytes import *
 importlib.reload(mysql.connector)
+import platform
 
 
 # obtenemos la fecha actual
@@ -63,6 +64,26 @@ class ConexionPostgreSQL:
     def respaldar(self, db_list):
         # Establecer la variable de entorno PGPASSWORD con la contraseña
         os.environ['PGPASSWORD'] = os.getenv('DATABASE_PASSWORD')
+        
+        ##########################################
+        
+        # Determinar el sistema operativo actual
+        operating_system = platform.system()
+
+        # Obtener la ruta al ejecutable pg_dump según el sistema operativo
+        if operating_system == "Windows":
+            pg_dump_executable = "pg_dump.exe"  # Ajusta esto según la ubicación de tu ejecutable pg_dump en Windows
+        else:
+            pg_dump_executable = "pg_dump"
+
+        # Obtener la ruta completa al ejecutable pg_dump
+        pg_dump_path = shutil.which(pg_dump_executable)
+
+        if pg_dump_path is None:
+            print(f"El ejecutable '{pg_dump_executable}' no se encontró en la ruta")
+        
+
+        ##########################################
 
         carpeta = os.path.join(self.ruta,"postgresSql", fecha)
         os.makedirs(carpeta, exist_ok=True)
