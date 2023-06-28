@@ -78,6 +78,7 @@ class ConexionPostgreSQL:
 
         # Obtener la ruta completa al ejecutable pg_dump
         pg_dump_path = shutil.which(pg_dump_executable)
+        print('ruta: ',pg_dump_path)
 
         if pg_dump_path is None:
             print(f"El ejecutable '{pg_dump_executable}' no se encontró en la ruta")
