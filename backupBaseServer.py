@@ -67,22 +67,12 @@ class ConexionPostgreSQL:
         
         ##########################################
         
-        # Determinar el sistema operativo actual
-        operating_system = platform.system()
+        # Obtener la ruta al ejecutable pg_dump dentro del entorno virtual
+        pg_dump_path = os.path.join(os.environ['VIRTUAL_ENV'], 'bin', 'pg_dump')
 
-        # Obtener la ruta al ejecutable pg_dump según el sistema operativo
-        if operating_system == "Windows":
-            pg_dump_executable = "pg_dump.exe"  # Ajusta esto según la ubicación de tu ejecutable pg_dump en Windows
-        else:
-            pg_dump_executable = "pg_dump"
-
-        # Obtener la ruta completa al ejecutable pg_dump
-        pg_dump_path = shutil.which(pg_dump_executable)
-        print('ruta: ',pg_dump_path)
-
-        if pg_dump_path is None:
-            print(f"El ejecutable '{pg_dump_executable}' no se encontró en la ruta")
-        
+        if not os.path.exists(pg_dump_path):
+            print(f"El ejecutable '{pg_dump_path}' no se encontró en la ruta")
+            return
 
         ##########################################
 
