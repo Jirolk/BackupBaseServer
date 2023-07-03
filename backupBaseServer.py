@@ -65,17 +65,6 @@ class ConexionPostgreSQL:
         # Establecer la variable de entorno PGPASSWORD con la contraseña
         os.environ['PGPASSWORD'] = os.getenv('DATABASE_PASSWORD')
         
-        ##########################################
-        
-        # Obtener la ruta al ejecutable pg_dump dentro del entorno virtual
-        pg_dump_path = os.path.join(os.environ['VIRTUAL_ENV'], 'bin', 'pg_dump')
-
-        if not os.path.exists(pg_dump_path):
-            print(f"El ejecutable '{pg_dump_path}' no se encontró en la ruta")
-            return
-
-        ##########################################
-
         carpeta = os.path.join(self.ruta,"postgresSql", fecha)
         os.makedirs(carpeta, exist_ok=True)
         password = os.getenv('pDATABASE_PASSWORD')
@@ -89,8 +78,7 @@ class ConexionPostgreSQL:
             archivo = os.path.join(carpeta, f"{db}.sql.gz")
             #comando para el respaldo de la BD postgres
             cmd = [
-                #'pg_dump',
-                pg_dump_path,
+                'pg_dump',
                 '-h', os.getenv('pDATABASE_HOST'),
                 '-U', os.getenv('pDATABASE_USER'),
                 # '-W', os.getenv('DATABASE_PASSWORD'),

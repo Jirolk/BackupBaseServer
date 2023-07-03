@@ -34,8 +34,8 @@ try:
         f"host={host} dbname={dbname} user={user} password={password} port={port}")
     print('Conexión exitosa')
 except (Exception, psycopg2.Error)  as error:
-    logging.error(f"Fallo con la conexiÃ³n: {error}")
-    print(f'Falla con la conexiÃ³n: {error}')
+    logging.error(f"Fallo con la conexion: {error}")
+    print(f'Falla con la conexion: {error}')
             
 # Crear un objeto cursor para ejecutar consultas SQL
 cursor = conn.cursor()
